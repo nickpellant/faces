@@ -1,57 +1,62 @@
 module Faces
   module Configuration
-    # Configuration for gravatar images
+    # Configuration for Gravatar avatars
     GRAVATAR = {
-      # Apply a rating requirement
-      :rating             => 'PG',
-      # Additional classes if desired
-      :additional_classes => 'gravatar'
+      # Apply a Gravatar rating requirement ('G', 'PG', 'R', 'X')
+      # We default to 'G' to remain consistant with Gravatar
+      :gravatar_rating       => 'G',
+      # Additional HTML classes specific to Gravatar provider (merged with :html_classes)
+      :html_provider_classes => 'gravatar'
     }
   end
   module Providers
+    # Gravatar class handles all Gravatar based avatar methods, check the information page for more details:
+    # http://nickpellant.com/open-source/faces/ruby/providers/gravatar
+    #
+    # Default required methods for providers are +url+ and/or +html+, +exists?+
+    # All other methods are at the discretion of the developer
+    # Check the provider creation guide for more details:
+    # http://nickpellant.com/open-source/faces/ruby/developing-providers
     class Gravatar
-      def src(email, config = {})
-        # Merge all possible configuration options
-        config = merged_config(config)
-        hostname(config) + id(email) + build_params_string(config)
+      # Constructs Gravatar url from email/configuration
+      # It can be passed either an MD5 hash as email or a string email
+      def url(email, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::GRAVATAR, configuration])
+        email = md5_email(email) if email.include? "@"
+        url = hostname(m_configuration) + email + build_params_string(m_configuration)
       end
-    
-      def id(email)
-        Digest::MD5.hexdigest(email)
+      # Constructs HTML <img /> tag for Gravatar
+      def html(email, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::GRAVATAR, configuration])
+        Faces::Public.generate_html(url(email, configuration), m_configuration)
       end
-    
-      def merged_config(config)
-        @config ||= Faces::Common.merge_configurations([Faces::Configuration::GRAVATAR, config])
+      # Checks Avatar exists
+      def exists?(email, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::GRAVATAR, configuration, {:default => '404'}])
+        url = URI.parse(url(email, m_configuration))
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = (url.scheme == 'https')
+        request = Net::HTTP::Get.new(url.path + '?' + url.query)
+        response = http.request(request)
+        response.code == '200' ? true : false
       end
-    
-      def image_tag(email, config = {})
-        config = merged_config(config)
-        image = Faces::Public.image_tag(src(email, config), config)
+      # Formats email and converts into MD5 hash for use with Gravatar url
+      def md5_email(email)
+        Digest::MD5.hexdigest(email.strip.downcase)
       end
-    
-      def exists?(email)
-        if Net::HTTP.get_response(URI.parse(src(email, {:default => '404'}))).code != "200"
-          false
-        else
-          true
-        end
-      end
-      
-      def allow_url?; true; end
-      def allow_image?; true; end
-            
     private
-      def hostname(config)
-        'http' + (config[:secure] ? 's://secure.' : '://') + 'gravatar.com/avatar/'
+      # Constructs appropriate hostname based on secure preferences
+      def hostname(m_configuration = {})
+        'http' + (m_configuration[:use_secure] ? 's://secure.' : '://') + 'gravatar.com/avatar/'
       end
-     
-      def build_params_string(config)
-        # Size of the avatar
-        Faces::Common.build_param('s', config[:size], true) + 
-          # Rating identifier of the avatar
-          Faces::Common.build_param('r', config[:rating])  +
-          # Default image to defer too (or generator, in this case)
-          Faces::Common.build_param('d', config[:default])
+      # Build url parameters string
+      def build_params_string(m_configuration = {})
+        # Set the size of the avatar we want to fetch
+        Faces::Common.build_param('s', m_configuration[:size], true) + 
+          # Set the rating of the avatar we want to fetch
+          Faces::Common.build_param('r', m_configuration[:gravatar_rating])  +
+          # Default image to defer too (or possibily a generator in the case of Gravatar)
+          Faces::Common.build_param('d', m_configuration[:default])
       end
     end
   end

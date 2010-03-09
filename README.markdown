@@ -1,136 +1,201 @@
 # Faces
 
-<small>The easiest implementation for Avatars in ruby. By [Nick](http://nickpellant.com).</small>
+<small>Avatars made easy, by [Nick Pellant](http://nickpellant.com).</small>
 
-Faces utilizes external avatar sources to provide you with the widest range of options for your users avatar. Faces currently supports the following providers;
+Faces is an avatar provider/management library. It allows developers to fetch avatars from multiple sources in a consistent manner. Faces was built to rectify a problem originally faced when improving the avatars system at [Silentale](http://silentale.com). Faces has default support for the following avatar sources:
 
-* [Gravatar](http://gravatar.com)
-* [Twitter](http://twitter.com) (via [Tweet Images](http://tweetimag.es/) API)
 * [Facebook](http://facebook.com)
+* [Twitter](http://twitter.com) via [Tweet Images](http://tweetimag.es/)
+* [Highrise](http://highrisehq.com)
 * [Flickr](http:/flickr.com)
+* [Gravatar](http://gravatar.com)
 
-Each of the providers are explained below if they have special needs. In general though pulling an avatar is as easy as;
-
-    avatar_html(identifier, provider, config = {}) # Gives image html tag
-    avatar_url(identifier, provider, config = {}) # Gives avatar url
-
-Faces is setup to allow developers to add providers quickly and easily. If you do add a provider and you think it would be useful to the collective, make sure to shoot over a pull request.
+Faces is now available in both [Ruby](http://github.com/nickpellant/faces) and [PHP](http://github.com/nickpellant/faces-php) with a Python version in its way soon. As Faces is available in multiple languages provider support may vary from one project to another however it will be attempted to keep default provider support synchronized.
 
 ## Public methods
 
-To generate an avatar image html tag:
+    avatar_url(identifier, provider, configuration = {})
 
-    avatar_html(identifier, provider, config = {})
+The **avatar\_url** method is an accessor point to pull an avatar from a provider. The method will only return a value if the provider exists and the **url** method exists for the provider, otherwise it will return the default avatar url (**avatar\_default\_url**).
 
-To generate an avatar url:
+    avatar_html(identifier, provider, configuration = {})
 
-    avatar_url(identifier, provider, config = {})
-    
-To generate the default avatar html tag:
+The **avatar\_html** method is an accessor point to pull an avatar from a provider and encase it in a img html tag. It will also add any configurations you've set regarding markup to the tag. The method will only return a value if the provider exists and the **html** method exists for the provider, otherwise it will return the default avatar html (**avatar\_default\_html**).
 
-    avatar_default_html(identifier, provider, config = {})
-    
-To generate the default avatar url tag:
+    generate_html(url, configuration = {})
+  
+The **generate\_html** method allows you to pass an avatar URL for which a provider does not exist so as to use the Faces configuration architecture, allowing you to keep a level of consistency. (We do suggest however you build your own providers directly, as it's a hell of a lot cooler)
 
-    avatar_default_url(identifier, provider, config = {})
+    avatar_default_url(configuration = {})
 
-To check whether a provider is supported (by default or by plugin):
+The **avatar\_default\_url** method returns the default avatar url.
+ 
+    avatar_default_html(configuration = {})
 
-    provider_exists?(provider)    
+The **avatar\_default\_html** method returns the default avatar html img tag.
 
-To check whether an avatar exists:
+    avatar_exists?(identifier, provider, configuration = {})
 
-    avatar_exists?(identifier, provider)
+The **avatar\_exists?** method returns true/false as to whether an avatar exists for the given details.
 
-To generate an image tag directly with an src (useful for unsupported providers):
+    provider_exists?(provider)
 
-    avatar_exists?(src, config = {})
+The **provider\_exists?** method returns true/false as to whether a provider with the given string exists and is available.
 
-## Install
+    provider_method_exists?(method, provider)
+
+The **provider\_method\_exists?** method returns true/false as to whether said method exists for said provider (also returns false if provider does not exist).
+
+### Note
+
+Make sure to check out the relevant documentation for each provider. Providers are standardized as much as possible but there are sometimes special requirements (Flickr requires an API key in it's configuration, for example).
+
+## Installation
+
+Install the gem (**Recommended**)
 
     sudo gem install faces
-    
-Add this to your `environment.rb`:
 
-    config.gem 'faces', :version => '>= 1.0'
+### Ruby on Rails
 
-## Configuration
+Add this to your `environment.rb` (gem setup only)
 
-Faces by default sets some universal configuration values however you may want to change these to your needs. To change the default configurations the easiest way is to setup an initializer. Here is an example for changing the default picture URL (one which everyone is advised to do to avoid blank images).
+    config.gem 'faces', :version => '>= x.x'
 
-    Faces::Configuration::UNIVERSAL[:default] = 'http://dummy.host/images/default.png'
+If you don't like gems for some reason, install it as a plugin
+
+    script/plugin install git://github.com/nickpellant/faces.git
+
+We also suggest you setup your configuration via an initializer (find an example file on how to do this in the 'examples/rails' folder)
+
+## Configuration options
+
+Faces has a hierarchy system for configuration. We start of with a universal configuration and gradually override as we go down the chain like so:
+
+**Custom Configuration (method set)** > **Provider Configuration** > **Universal Configuration** 
+
+Faces by default sets a whole bunch of values for provider & universal configurations, but we highly recommend you change them to suit your needs. I've listed the universal ones below and provider specific configuration options with their provider documentations.
+
+  * ::Faces::Configuration::UNIVERSAL
+    * Fallback avatar url (string)
+      * :default      => 'http://www.gravatar.com/avatar/?d=identicon'
+    * Max dimension constraints for width/height of avatar (integer)
+      * :size         => 50
+    * Universally assigned classes to all avatars (string)
+      * :html\_classes => 'faces avatars'
+    * Use secure connection where possible (boolean)
+      * :html\_classes => false
+    * Restrict dimensions, to activate set 'square-only' (string)
+      * :dimension\_restriction => ''
+
+## Facebook Provider
+
+The Facebook provider supports all the functionality available from it's API. It supports only **html** calls however (which are, in fact FBML, but we keep the name for sake of consistency).
+
+There are a few additional configuration options available for Facebook that you may want to look at.
   
-Also to use certain providers you are required to add certain values. For instance with Flickr you must give an API key.
+  * ::Faces::Configuration::FACEBOOK
+    * Layer facebook logo ontop of avatar (boolean)
+      * :facebook\_logo => false
+    * Auto-link avatar back to Facebook (boolean)
+      * :facebook\_auto\_linked => false
+    * Provider specific html classes (string)
+      * :html\_provider\_classes => 'facebook'
 
-    Faces::Configuration::FLICKR[:flickr_api_key] = 'flickrkeygoeshere123'
+To get this provider working you will also need a Facebook application/API key (this is because the provider uses FBML to generate it's avatars).
 
-You can also override any universal configuration for a specific provider, if so desired.
-
-### Universal
-
-The following configuration options are available for setting universally:
-
-* default   - If an avatar is unavailable, we defer to this url. ['']
-* size      - Default avatar dimensions in pixels. If avatar is not square, this is used as a max point for either height/width. [50]
-* classes   - Base classes to be assigned to all faces avatars ['faces avatar']
-* secure    - Use a secure connection when one is available? [false]
-* file_type - If possible we will use this file type with the providers ['']
-
-### Gravatar
-
-The following configuration options are available for setting to Gravatars:
-
-* rating             - Top rating allowed for gravatars. ['PG']
-* additional_classes - Additional classes to be assigned (on-top of universal classes) ['gravatar']
-
-#### Further reading
-
-* [Gravatar URL construction](http://en.gravatar.com/site/implement/url)
-
-### Twitter
-
-The following configuration options are available for setting to Twitter:
-
-* additional_classes - Additional classes to be assigned (on-top of universal classes) ['twitter']
-
-Twitter avatar sizes are calculated dynamically. Available sizes are 24x24, 48x48, 73x73 and the original size. Faces calculates which of the available sizes provided by twitter best matches the dimensions you provided us in universal settings.
-
-#### Further reading
-
-* [Tweet Images](http://tweetimag.es/)
-
-### Facebook
-
-The following configuration options are available for setting to Facebook:
-
-* additional_classes - Additional classes to be assigned (on-top of universal classes) ['facebook']
-* facebook_logo      - Whether you want the facebook logo overlaid on-top of the avatar ['true' or 'false']
-* linked             - Whether you want the avatar to link to the persons facebook profile ['true' or 'false']
-
-To get Facebook working you will also need a Facebook application and add the following to your application before you close the body tag;
+Once you have the application & API key add the following before the close of your body tag
 
     <script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php/en_GB" type="text/javascript"></script>
-    <script type="text/javascript">FB.init("PUBLIC API KEY HERE");</script>
-       
-Make sure you have setup Facebook Connect with the site url and base url in the application settings correctly otherwise it will not work!
+    <script type="text/javascript">FB.init("INSERT PUBLIC API KEY HERE");</script>
 
-You will also need to add the following to your html tag;
+Make sure you have setup Facebook Connect for your Facebook application with the site url and base url in the application settings. If they are setup incorrectly this will not work!
+
+You will also need to add the following to your html tag to complete the setup
 
     xmlns:fb="http://www.facebook.com/2008/fbml"
+    
+Facebook avatar sizes are calculated dynamically from your configuration. Available sizes are 50x50, <=100 and >100. Faces calculates which of the available sizes provided by facebook best matches the dimensions you provided. If you select to receive only square images but choose a size over 50x50 there will be pixilation.
 
-#### Further reading
+### Further reading
 
+* [Full Facebook provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/facebook)
 * [Fb:profile-pic Documentation](http://wiki.developers.facebook.com/index.php/Fb:profile-pic)
 
-### Flickr
+## Twitter Provider
 
-The following configuration options are available for setting to Flickr:
+The Twitter provider uses the [Tweet Images](http://tweetimag.es/) mapper to provide urls (an awesome project from [Joe Stump](http://stu.mp)). It supports both **html** and **url** calls.
 
-* flickr\_api\_key   - API key for using Flickr API ['afdbdfopgp4psgvwrcop']
-* additional_classes - Additional classes to be assigned (on-top of universal classes) ['twitter']
+There are a few additional configuration options available for Gravatar that you may want to look at.
+  
+  * ::Faces::Configuration::TWITTER
+    * Provider specific html classes (string)
+      * :html\_provider\_classes => 'gravatar'
+      
+Twitter avatar sizes are calculated dynamically from your configuration. Available sizes are 24x24, 48x48, 73x73 and the original size. Faces calculates which of the available sizes provided by twitter best matches the dimensions you provided. If you select to receive only square images but choose a size over 73x73 you will be given the largest possible square avatar.
+      
+### Further reading
 
-Flickr only provides avatars at 48x48 - remember if you're using a higher size than this there will be pixilation.
+* [Full Gravatar provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/gravatar)
+* [Tweet Images](http://tweetimag.es/)
 
-#### Further reading
+## Highrise Provider
 
+Supports both **html** and **url** calls.
+
+Highrise expects a **contact\_id** as it's identifier parameter. It also expects the configuration option :highrise\_account\_name to be set appropriately.
+
+<small>_for those who do not know the account name for highrise is the subdomain, i.e. myaccountname.highrisehq.com_</small>
+
+There are a few additional configuration options available for Highrise that you may want to look at.
+  
+  * ::Faces::Configuration::FLICKR
+    * Provider specific html classes (string)
+      * :html\_provider\_classes => 'flickr'
+
+Highrise avatar sizes are calculated dynamically from your configuration. Available sizes are 32x32 and 53x53. Faces calculates which of the available sizes provided by Highrise best matches the dimensions you provided.
+
+### Further reading
+
+* [Full Highrise provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/highrise)
+* [Highrise API](http://developer.37signals.com/highrise/)
+
+## Flickr Provider
+
+The Flickr provider supports all the functionality of the API. It supports both **html** and **url** calls.
+
+To have the Flickr provider working you will _need_ to set an API key.
+
+  * ::Faces::Configuration::FLICKR
+    * API key of application on Flickr (string)
+      * :flickr\_api\_key => 'dzgasgji3ewaojodsgojw'
+
+There are a few additional configuration options available for Flickr that you may want to look at.
+  
+  * ::Faces::Configuration::FLICKR
+    * Provider specific html classes (string)
+      * :html\_provider\_classes => 'flickr'
+
+Flickr only provides avatars at 48x48 - if you're using a higher size than this there will be pixilation.
+
+### Further reading
+
+* [Full Flickr provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/flickr)
 * [Flickr Buddyicons](http://www.flickr.com/services/api/misc.buddyicons.html)
+
+## Gravatar Provider
+
+The Gravatar provider supports all the functionality available from it's API. It supports both **html** and **url** calls.
+
+There are a few additional configuration options available for Gravatar that you may want to look at.
+  
+  * ::Faces::Configuration::GRAVATAR
+    * Gravatar rating, minimum requirement (string)
+      * :gravatar\_rating => 'G'
+    * Provider specific html classes (string)
+      * :html\_provider\_classes => 'gravatar'
+      
+### Further reading
+
+* [Full Gravatar provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/gravatar)
+* [Gravatar URL construction](http://en.gravatar.com/site/implement/url)

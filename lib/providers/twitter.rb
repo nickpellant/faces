@@ -1,51 +1,58 @@
 module Faces
   module Configuration
-    # Default configuration for twitter images
+    # Configuration for Twitter avatars
     TWITTER = {
-      # Additional classes if desired
-      :additional_classes => 'twitter'
+      # Additional HTML classes specific to Twitter provider (merged with :html_classes)
+      :html_provider_classes => 'twitter'
     }
   end
   module Providers
+    # Twitter class handles all Twitter based avatar methods, check the information page for more details:
+    # http://nickpellant.com/open-source/faces/ruby/providers/twitter
+    #
+    # Default required methods for providers are +url+ and/or +html+, +exists?+
+    # All other methods are at the discretion of the developer
+    # Check the provider creation guide for more details:
+    # http://nickpellant.com/open-source/faces/ruby/developing-providers
     class Twitter
-      def src(username, config = {})
-        # Merge all possible configuration options
-        config = merged_config(config)
-        hostname + username + '_' + calculate_size(config)
+      # Constructs Twitter url from username/configuration
+      def url(username, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::TWITTER, configuration])
+        'http://img.tweetimag.es/i/' + username + '_' + size(m_configuration)
       end
-    
-      def image_tag(username, config = {})
-        config = merged_config(config)
-        image = Faces::Public.image_tag(src(username, config), config)
+      # Constructs HTML <img /> tag for Twitter
+      def html(username, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::TWITTER, configuration])
+        Faces::Public.generate_html(url(username, configuration), m_configuration)
       end
-    
-      def merged_config(config)
-        @config ||= Faces::Common.merge_configurations([Faces::Configuration::TWITTER, config])
+      # Checks Avatar exists
+      def exists?(username, configuration = {})
+        url = URI.parse(url(username, configuration))
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = (url.scheme == 'https')
+        request = Net::HTTP::Get.new(url.path)
+        response = http.request(request)
+        response.code == '200' ? true : false
       end
-    
-      def exists?(identifier); true; end
-      
-      def allow_url?; true; end
-      def allow_image?; true; end
-
     private
-      def hostname
-        'http://img.tweetimag.es/i/'
-      end
-     
-      def calculate_size(config)
-        # Mini
-        if config[:size] <= 24
+      # Calculates the size of image to pull from Twitter
+      # This is decided based on the configuration settings of Faces
+      def size(m_configuration = {})
+        # Mini sized
+        if m_configuration[:size] <= 24
           'm'
-        # Normal
-        elsif config[:size] <= 48
+        # Normal sized
+        elsif m_configuration[:size] <= 48
           'n'
-        # Large
-        elsif config[:size] <= 73
+        # Large sized
+        elsif m_configuration[:size] <= 73
           'b'
-        # Original
-        elsif config[:size] > 73
+        # Originally uploaded image
+        elsif m_configuration[:size] > 73 && m_configuration[:dimension_restriction] != 'square-only'
           'o'
+        # Default back to large size for anything above 73px but still square requirement
+        else
+          'b'
         end
       end
     end

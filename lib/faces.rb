@@ -2,87 +2,105 @@ require File.dirname(__FILE__) + '/providers/gravatar'
 require File.dirname(__FILE__) + '/providers/twitter'
 require File.dirname(__FILE__) + '/providers/facebook'
 require File.dirname(__FILE__) + '/providers/flickr'
+require File.dirname(__FILE__) + '/providers/highrise'
 
 require 'net/http'
+require 'net/https'
 require 'rexml/document'
 require 'digest/md5'
 
 module Faces
+  module Configuration
+    # Universal configuration for avatars
+    UNIVERSAL = {
+      # Avatar to default to
+      :default      => 'http://www.gravatar.com/avatar/?d=identicon',
+      # Max height or width pixel size for returned avatar
+      :size         => 50,
+      # CSS classes to be assigned to all <img /> tags
+      :html_classes => 'faces avatar',
+      # Use a secure connection when one is available
+      :use_secure   => false,
+      # If we only ever want to return square images, set to square-only
+      :dimension_restriction  => ''
+    }
+  end
   module Public
-    def avatar_html(identifier, provider, config = {})
+    # Returns the avatar in an <img /> HTML tag based on identifier, provider and configuration
+    # Uses local provider classes to generate the result
+    # Does not check for existance of Avatar, this is the responsibility of the developer
+    def avatar_html(identifier, provider, configuration = {})
+      if provider_method_exists?('html', provider)
+        obj  = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
+        obj.html(identifier, configuration)
+      else
+        avatar_default_html(configuration)
+      end
+    end
+    # Returns avatar url based on identifier, provider and configuration
+    # Uses local provider classes to generate the result
+    # Does not check for existance of Avatar, this is the responsibility of the developer
+    def avatar_url(identifier, provider, configuration = {})
+      if provider_method_exists?('url', provider)
+        obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
+        obj.url(identifier, configuration) 
+      else
+        avatar_default_url(configuration)
+      end
+    end
+    # Returns true if avatar exists, false if not 
+    def avatar_exists?(identifier, provider, configuration = {})
       obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
-      obj.image_tag(identifier, config)
+      obj.exists?(identifier, configuration)
     end
-    
-    def avatar_url(identifier, provider, config = {})
-      obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
-      obj.src(identifier, config)
+    # Returns the default avatar in an <img /> HTML tag
+    def avatar_default_html(configuration = {})
+      url = configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
+      generate_html(url, configuration)
     end
-    
-    def avatar_default_html(config = {})
-      src = config[:default].present? ? config[:default] : ::Faces::Configuration::UNIVERSAL[:default]
-      image_tag(src, config)
+    # Returns the default avatar as a url   
+    def avatar_default_url(configuration = {})
+      configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
     end
-    
-    def avatar_default_url(config = {})
-      config[:default].present? ? config[:default] : ::Faces::Configuration::UNIVERSAL[:default]
-    end
-    
+    # Returns true if provider exists, false if not 
     def provider_exists?(provider)
       true if ::Faces::Providers.const_get("#{provider.to_s.classify}")
     rescue NameError
       false
     end
-  
-    def avatar_exists?(identifier, provider)
-      obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
-      obj.exists?(identifier)
+    # Returns true if provider method exists, false if not 
+    def provider_method_exists?(method, provider)
+      if ::Faces::Providers.const_get("#{provider.to_s.classify}")
+        obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
+        obj.respond_to?(method) 
+      end
+    rescue NameError
+      false
     end
-    
-    def image_tag(src, config = {})
-      config = Faces::Common.merge_configurations([Faces::Configuration::UNIVERSAL, config])
-      classes = config[:additional_classes].present? ? config[:classes] + ' ' + config[:additional_classes] : config[:classes]
+    # Generates a HTML <img /> tag for the given url
+    def generate_html(url, configuration = {})
+      m_configuration = Faces::Common.merge_configurations([Faces::Configuration::UNIVERSAL, configuration])
+      combined_classes = m_configuration[:html_provider_classes].present? ? m_configuration[:html_classes] + ' ' + m_configuration[:html_provider_classes] : m_configuration[:html_classes]
       
-      tag = '<img src="' + src + '" class="' + classes + '"'
-      tag += 'id="' + config[:id] + '"' if config[:id].present?
-      tag += ' />'
+      html  = '<img src="' + url + '" class="' + combined_classes + '"'
+      html += 'id="' + m_configuration[:id] + '"' if m_configuration[:id].present?
+      html += ' />'
     end
     
-    module_function :avatar_exists?, :provider_exists?, :avatar_url, :avatar_html, :image_tag, :avatar_default_html, :avatar_default_url
-  end
-  
-  module Configuration
-    # Universal configuration for avatars
-    UNIVERSAL = {
-      # If a avatar is unavailable for the provided details
-      :default    => '',
-      # Default avatar dimensions in pixels (always returns square)
-      :size       => 50,
-      # CSS class(es) to be assigned to image tags
-      :classes    => 'faces avatar',
-      # Use a secure connection when one is available
-      :secure     => false,
-      # If possible we will use this file type ending with our providers (png, jpeg, etc.)
-      :file_type  => ''
-    }
-  end
-  
+    module_function :avatar_exists?, :provider_exists?, :provider_method_exists?, :avatar_url, :avatar_html, :generate_html, :avatar_default_html, :avatar_default_url
+  end  
   module Common
     # Merges together all configurations given from first to last in order of priority
     def merge_configurations(configurations)
       configuration = Faces::Configuration::UNIVERSAL
       configurations.each do |config|
-        configuration = configuration.merge!(config)
+        configuration = configuration.merge(config)
       end
       configuration
     end
-    
+    # Builds a url query parameter string
     def build_param(key, value, first = false)
-      if value.present?
-        first == true ? "?#{key}=#{value}" : "&#{key}=#{value}"
-      else
-        ''
-      end
+      value.present? ? (first == true ? "?#{key}=#{value}" : "&#{key}=#{value}") : ''
     end
     
     module_function :merge_configurations, :build_param

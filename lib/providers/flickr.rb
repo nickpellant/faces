@@ -1,41 +1,53 @@
 module Faces
   module Configuration
-    # Default configuration for flickr images
+    # Configuration for Flickr avatars
     FLICKR = {
-      :flickr_api_key     => '98170ee24764224d926092360a20da8f',
-      # Additional classes if desired
-      :additional_classes => 'flickr'
+      # Required to use the Flickr provider
+      :flickr_api_key => '',
+      # Additional HTML classes specific to Twitter provider (merged with :html_classes)
+      :html_provider_classes => 'twitter'
     }
   end
   module Providers
+    # Flickr class handles all Flickr based avatar methods, check the information page for more details:
+    # http://nickpellant.com/open-source/faces/ruby/providers/flickr
+    #
+    # Default required methods for providers are +url+ and/or +html+, +exists?+
+    # All other methods are at the discretion of the developer
+    # Check the provider creation guide for more details:
+    # http://nickpellant.com/open-source/faces/ruby/developing-providers
     class Flickr
-      def src(id, config = {})
-        # Merge all possible configuration options
-        config = Faces::Common.merge_configurations(Faces::Configuration::FLICKR, config)
-        hostname(fetch_avatar_details(id, config)) + id + '.jpg'
+      # Constructs Flickr url from user_id/configuration
+      def url(user_id, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::FLICKR, configuration])
+        hostname(flickr_avatar_details(user_id, m_configuration)) + user_id + '.jpg'
       end
-    
-      def image_tag(id, config = {})
-        src   = src(id, config)
-        image = Faces::Public.image_tag(src, config)
+      # Constructs HTML <img /> tag for Flickr
+      def html(user_id, configuration = {})
+        m_configuration = Faces::Common.merge_configurations([Faces::Configuration::FLICKR, configuration])
+        Faces::Public.generate_html(url(user_id, configuration), m_configuration)
       end
-        
-      def allow_url?; true; end
-      def allow_image?; true; end
+      # Checks Avatar exists
+      def exists?(user_id, configuration = {})
+        url = URI.parse(url(user_id, configuration))
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = (url.scheme == 'https')
+        request = Net::HTTP::Get.new(url.path)
+        response = http.request(request)
+        response.code == '200' ? true : false
+      end
     private
-    
-      def fetch_avatar_details(id, config)
-        xml_data = Net::HTTP.get_response(URI.parse('http://api.flickr.com/services/rest/?method=flickr.people.' + 
-        'getInfo&api_key=' + config[:flickr_api_key] + '&user_id=' + id)).body
-        doc = REXML::Document.new(xml_data)
-        {
-          :icon_server => doc.root.attributes['iconserver'],
-          :icon_farm => doc.root.attributes['iconfarm'],
-        }
+      # Fetches the buddyicon farm details based on the user_id given
+      # An avatar can not be pulled from Flickr without this method
+      def flickr_avatar_details(user_id, m_configuration = {})
+        url = URI.parse('http://api.flickr.com/services/rest/?method=flickr.people.getInfo&api_key=' + m_configuration[:flickr_api_key] + '&user_id=' + user_id)
+        xml = Net::HTTP.get_response(url).body
+        doc = REXML::Document.new(xml)
+        { :icon_server => doc.root.elements['person'].attributes['iconserver'], :icon_farm => doc.root.elements['person'].attributes['iconfarm'] }
       end
-        
-      def hostname(details)
-        'http://farm' + details[:icon_farm] + '.static.flickr.com/' + details[:icon_server] + '/buddyicons/'
+      # Constructs appropriate hostname based on return of flickr_avatar_details
+      def hostname(flickr_details)
+        'http://farm' + flickr_details[:icon_farm] + '.static.flickr.com/' + flickr_details[:icon_server] + '/buddyicons/'
       end
     end
   end
