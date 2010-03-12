@@ -28,7 +28,7 @@ module Faces
         fbml += '"></fb:profile-pic>'
       end
       # Botch job as it's not possible to check for FBML avatar presence :(
-      def exists?(identifier); true; end
+      def exists?(identifier, configuration = {}); true; end
     private
       # Calculates the size of image to pull from Facebook
       # This is decided based on the configuration settings of Faces
