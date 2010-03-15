@@ -126,32 +126,32 @@ Facebook avatar sizes are calculated dynamically from your configuration. Availa
 
 The Twitter provider uses the [Tweet Images](http://tweetimag.es/) mapper to provide urls (an awesome project from [Joe Stump](http://stu.mp)). It supports both **html** and **url** calls.
 
-There are a few additional configuration options available for Gravatar that you may want to look at.
+There are a few additional configuration options available for Twitter that you may want to look at.
   
   * ::Faces::Configuration::TWITTER
     * Provider specific html classes (string)
-      * :html\_provider\_classes => 'gravatar'
+      * :html\_provider\_classes => 'twitter'
       
 Twitter avatar sizes are calculated dynamically from your configuration. Available sizes are 24x24, 48x48, 73x73 and the original size. Faces calculates which of the available sizes provided by twitter best matches the dimensions you provided. If you select to receive only square images but choose a size over 73x73 you will be given the largest possible square avatar.
       
 ### Further reading
 
-* [Full Gravatar provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/gravatar)
+* [Full Twitter provider documentation](http://nickpellant.com/open-source/faces/ruby/provider/twitter)
 * [Tweet Images](http://tweetimag.es/)
 
 ## Highrise Provider
 
 Supports both **html** and **url** calls.
 
-Highrise expects a **contact\_id** as it's identifier parameter. It also expects the configuration option :highrise\_account\_name to be set appropriately.
+Highrise expects a **contact\_id** as it's identifier parameter. It also expects the configuration option `:highrise_account_name` to be set appropriately.
 
 <small>_for those who do not know the account name for highrise is the subdomain, i.e. myaccountname.highrisehq.com_</small>
 
 There are a few additional configuration options available for Highrise that you may want to look at.
   
-  * ::Faces::Configuration::FLICKR
+  * ::Faces::Configuration::HIGHRISE
     * Provider specific html classes (string)
-      * :html\_provider\_classes => 'flickr'
+      * :html\_provider\_classes => 'highrise'
 
 Highrise avatar sizes are calculated dynamically from your configuration. Available sizes are 32x32 and 53x53. Faces calculates which of the available sizes provided by Highrise best matches the dimensions you provided.
 
