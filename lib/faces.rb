@@ -1,8 +1,4 @@
-require File.dirname(__FILE__) + '/providers/gravatar'
-require File.dirname(__FILE__) + '/providers/twitter'
-require File.dirname(__FILE__) + '/providers/facebook'
-require File.dirname(__FILE__) + '/providers/flickr'
-require File.dirname(__FILE__) + '/providers/highrise'
+Dir.glob(File.join(File.dirname(__FILE__), '/providers/*.rb')).each { |f| require f }
 
 require 'net/http'
 require 'net/https'
