@@ -36,6 +36,8 @@ module Faces
         response = http.request(request)
         response.code == '200' ? true : false
       end
+      # Doesn't support SSL
+      def ssl?; false; end
     private
       # Fetches the buddyicon farm details based on the user_id given
       # An avatar can not be pulled from Flickr without this method

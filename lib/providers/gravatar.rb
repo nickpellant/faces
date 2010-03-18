@@ -40,6 +40,8 @@ module Faces
         response = http.request(request)
         response.code == '200' ? true : false
       end
+      # Supports SSL
+      def ssl?; true; end
       # Formats email and converts into MD5 hash for use with Gravatar url
       def md5_email(email)
         Digest::MD5.hexdigest(email.strip.downcase)

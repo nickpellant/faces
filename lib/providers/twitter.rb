@@ -25,6 +25,8 @@ module Faces
         m_configuration = Faces::Common.merge_configurations([Faces::Configuration::TWITTER, configuration])
         Faces::Public.generate_html(url(username, configuration), m_configuration)
       end
+      # Doesn't support SSL
+      def ssl?; false; end
       # Checks Avatar exists
       def exists?(username, configuration = {})
         url = URI.parse(url(username, configuration))

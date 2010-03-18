@@ -25,6 +25,8 @@ module Faces
         m_configuration = Faces::Common.merge_configurations([Faces::Configuration::HIGHRISE, configuration])
         Faces::Public.generate_html(url(contact_id, configuration), m_configuration)
       end
+      # Supports SSL
+      def ssl?; true; end
       # Checks Avatar exists
       def exists?(contact_id, configuration = {})
         url = URI.parse(url(contact_id, configuration))

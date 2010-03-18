@@ -49,6 +49,11 @@ module Faces
       obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
       obj.exists?(identifier, configuration)
     end
+    # Returns true if the provider has SSL available, else false
+    def provider_supports_ssl?(provider)
+      obj = "::Faces::Providers::#{provider.to_s.classify}".constantize.new
+      obj.respond_to?('ssl?') ? obj.ssl? : false
+    end
     # Returns the default avatar in an <img /> HTML tag
     def avatar_default_html(configuration = {})
       url = configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
@@ -83,7 +88,7 @@ module Faces
       html += ' />'
     end
     
-    module_function :avatar_exists?, :provider_exists?, :provider_method_exists?, :avatar_url, :avatar_html, :generate_html, :avatar_default_html, :avatar_default_url
+    module_function :avatar_exists?, :provider_exists?, :provider_supports_ssl?, :provider_method_exists?, :avatar_url, :avatar_html, :generate_html, :avatar_default_html, :avatar_default_url
   end  
   module Common
     # Merges together all configurations given from first to last in order of priority

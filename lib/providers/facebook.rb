@@ -29,6 +29,8 @@ module Faces
       end
       # Botch job as it's not possible to check for FBML avatar presence :(
       def exists?(identifier, configuration = {}); true; end
+      # Doesn't support SSL
+      def ssl?; false; end
     private
       # Calculates the size of image to pull from Facebook
       # This is decided based on the configuration settings of Faces
