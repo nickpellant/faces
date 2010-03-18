@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{faces}
-  s.version = "0.5.1"
+  s.version = "0.6.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Pellant"]
-  s.date = %q{2010-03-15}
+  s.date = %q{2010-03-18}
   s.description = %q{Avatars made super simple.}
   s.email = %q{nick@silentale.com}
   s.extra_rdoc_files = [
@@ -40,7 +40,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/nickpellant/faces}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.6}
+  s.rubygems_version = %q{1.3.5}
   s.summary = %q{Faces manages external and internal avatar sources in one unified format.}
   s.test_files = [
     "test/providers/test_facebook.rb",
