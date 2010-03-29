@@ -70,4 +70,16 @@ class FacesTest < Test::Unit::TestCase
     result = ::Faces::Public.provider_supports_ssl?('twitter')  
     assert !result
   end
+  
+  ################################
+  #--- build_params_string ---#
+  ################################
+  def test_build_params_should_accept_a_first_parameter
+    assert_match /\A\?.*/, Faces::Common.build_param('a', 'b', first = true)
+    assert_match /\A&.*/, Faces::Common.build_param('a', 'b', first = false)
+  end
+  
+  def test_build_params_should_encode_values
+    assert_equal '?url=http%3A%2F%2Fx.y.com%3Fa%3Db', Faces::Common.build_param('url', 'http://x.y.com?a=b', first = true)
+  end
 end

@@ -4,6 +4,7 @@ require 'net/http'
 require 'net/https'
 require 'rexml/document'
 require 'digest/md5'
+require 'cgi'
 
 module Faces
   module Configuration
@@ -101,7 +102,7 @@ module Faces
     end
     # Builds a url query parameter string
     def build_param(key, value, first = false)
-      value.present? ? (first == true ? "?#{key}=#{value}" : "&#{key}=#{value}") : ''
+      value.present? ? (first == true ? "?#{key}=#{CGI.escape(value.to_s)}" : "&#{key}=#{CGI.escape(value.to_s)}") : ''
     end
     
     module_function :merge_configurations, :build_param
