@@ -57,12 +57,14 @@ module Faces
     end
     # Returns the default avatar in an <img /> HTML tag
     def avatar_default_html(configuration = {})
-      url = configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
+      default = configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
+      url = configuration[:size].present? ? default[configuration[:size]] : default::Faces::Configuration::UNIVERSAL[:size]
       generate_html(url, configuration)
     end
     # Returns the default avatar as a url   
     def avatar_default_url(configuration = {})
-      configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
+      default = configuration[:default].present? ? configuration[:default] : ::Faces::Configuration::UNIVERSAL[:default]
+      url = configuration[:size].present? ? default[configuration[:size]] : default::Faces::Configuration::UNIVERSAL[:size]
     end
     # Returns true if provider exists, false if not 
     def provider_exists?(provider)

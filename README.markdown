@@ -77,8 +77,10 @@ Faces has a hierarchy system for configuration. We start of with a universal con
 Faces by default sets a whole bunch of values for provider & universal configurations, but we highly recommend you change them to suit your needs. I've listed the universal ones below and provider specific configuration options with their provider documentations.
 
   * ::Faces::Configuration::UNIVERSAL
-    * Fallback avatar url (string)
-      * :default      => 'http://www.gravatar.com/avatar/?d=identicon'
+    * Fallback avatar url (hash)
+      * :default      => {
+        50 => 'http://www.gravatar.com/avatar/?d=identicon'
+      }
     * Max dimension constraints for width/height of avatar (integer)
       * :size         => 50
     * Universally assigned classes to all avatars (string)
