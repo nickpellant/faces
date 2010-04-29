@@ -91,6 +91,7 @@ module Faces
       html += " width=\"#{m_configuration[:width]}\"" if m_configuration[:width].present?
       html += " height=\"#{m_configuration[:height]}\"" if m_configuration[:height].present?
       html += " alt=\"#{m_configuration[:alt]}\"" if m_configuration[:alt].present?
+      html += " title=\"#{m_configuration[:title]}\"" if m_configuration[:title].present?
       html += ' />'
     end
     

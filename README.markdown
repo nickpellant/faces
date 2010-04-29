@@ -2,15 +2,17 @@
 
 <small>Avatars made easy, by [Nick Pellant](http://nickpellant.com).</small>
 
-Faces is an avatar provider/management library. It allows developers to fetch avatars from multiple sources in a consistent manner. Faces was built to rectify a problem originally faced when improving the avatars system at [Silentale](http://silentale.com). Faces has default support for the following avatar sources:
+**Faces** - a pluggable avatar architecture for universal implementation of avatars from multiple/external sources. Originally constructed to rectify a problem faced at [Silentale](http://silentale.com) when improving our avatar architecture. By default Faces comes equipped with providers for the following services:
 
-* [Facebook](http://facebook.com)
+* [Facebook](http://facebook.com) using [FBML](http://wiki.developers.facebook.com/index.php/FBML)
 * [Twitter](http://twitter.com) via [Tweet Images](http://tweetimag.es/)
 * [Highrise](http://highrisehq.com)
 * [Flickr](http:/flickr.com)
 * [Gravatar](http://gravatar.com)
 
-Faces is now available in both [Ruby](http://github.com/nickpellant/faces) and [PHP](http://github.com/nickpellant/faces-php) with a Python version in its way soon. As Faces is available in multiple languages provider support may vary from one project to another however it will be attempted to keep default provider support synchronized.
+If you create a super-cool new provider make sure to give me a pull request so everyone can experience it.
+
+Faces will also be released in [PHP](http://github.com/nickpellant/faces-php) and [Python](http://github.com/nickpellant/faces-python) over the coming weeks. Stay tuned for more information on those.
 
 ## Public methods
 
