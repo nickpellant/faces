@@ -1,5 +1,15 @@
 # Faces: Standardized Multi-Avatar Framework
 
+[![Gem Version](https://badge.fury.io/rb/faces.png)][gem]
+[![CI Build Status](https://secure.travis-ci.org/nickpellant/faces.png?branch=master)][travis]
+[![Code Climate](https://codeclimate.com/github/nickpellant/faces.png)][codeclimate]
+[![Coverage Status](https://coveralls.io/repos/nickpellant/faces/badge.png?branch=master)][coveralls]
+
+[gem]: https://rubygems.org/gems/faces
+[travis]: http://travis-ci.org/nickpellant/faces
+[codeclimate]: https://codeclimate.com/github/nickpellant/faces
+[coveralls]: https://coveralls.io/r/nickpellant/faces
+
 **Faces 1.0 is a complete rewrite and is not compatible with any previous release.**
 
 ## Introduction
