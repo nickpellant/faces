@@ -1,7 +1,9 @@
 require 'coveralls'
+
 Coveralls.wear!
 
 require 'rspec'
+require 'faces'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|
