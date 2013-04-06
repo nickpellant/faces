@@ -1,4 +1,4 @@
-require 'faces/version'
+require 'rack'
 
 module Faces
   module Strategies
