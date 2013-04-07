@@ -1,4 +1,5 @@
 require 'rack'
+require 'hashie/mash'
 
 module Faces
   module Strategies
